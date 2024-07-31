@@ -1,38 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ToDo
 {
     internal class Program
     {
-        public static List<string> TL { get; set; }
+        public static List<string> TaskList { get; set; }
 
         static void Main(string[] args)
         {
-            TL = new List<string>();
-            int variable = 0;
+            TaskList = new List<string>();
+
+            int selectedOption = 0;
+
             do
             {
-                variable = ShowMainMenu();
-                if (variable == 1)
+                ShowMainMenu();
+                selectedOption = UserNumericInput();
+                switch (selectedOption)
                 {
-                    ShowMenuAdd();
+                    case (int)Options.NewTask:
+                        ShowMenuAdd();
+                        break;
+                    case (int)Options.RemoveTask:
+                        ShowMenuRemove();
+                        break;
+                    case (int)Options.PendingTasks:
+                        ShowMenuDetail();
+                        break;
+                    default:
+                        Console.Clear();
+                        break;
                 }
-                else if (variable == 2)
-                {
-                    ShowMenuDos();
-                }
-                else if (variable == 3)
-                {
-                    ShowMenuTres();
-                }
-            } while (variable != 4);
+
+
+            } while (selectedOption != (int)Options.ExitProgram);
         }
-        /// <summary>
-        /// Show the main menu 
-        /// </summary>
-        /// <returns>Returns option indicated by user</returns>
-        public static int ShowMainMenu()
+
+
+        public static void ShowMainMenu()
         {
             Console.WriteLine("----------------------------------------");
             Console.WriteLine("Ingrese la opción a realizar: ");
@@ -40,40 +47,38 @@ namespace ToDo
             Console.WriteLine("2. Remover tarea");
             Console.WriteLine("3. Tareas pendientes");
             Console.WriteLine("4. Salir");
-
-            // Read line
-            string line = Console.ReadLine();
-            return Convert.ToInt32(line);
         }
 
-        public static void ShowMenuDos()
+        public static void ShowMenuRemove()
         {
+
+            ShowMenuDetail();
+
+
             try
             {
-                Console.WriteLine("Ingrese el número de la tarea a remover: ");
-                // Show current taks
-                for (int i = 0; i < TL.Count; i++)
+                if (TaskList.Count > 0)
                 {
-                    Console.WriteLine((i + 1) + ". " + TL[i]);
-                }
-                Console.WriteLine("----------------------------------------");
+                    Console.WriteLine("Ingrese el número de la tarea a remover: ");
+                    int userInput = UserNumericInput();
+                    int indexToRemove = UserInputToIndex(userInput);
 
-                string line = Console.ReadLine();
-                // Remove one position
-                int indexToRemove = Convert.ToInt32(line) - 1;
-                if (indexToRemove > -1)
-                {
-                    if (TL.Count > 0)
+                    if (indexToRemove > -1)
                     {
-                        string task = TL[indexToRemove];
-                        TL.RemoveAt(indexToRemove);
+
+                        string task = TaskList[indexToRemove];
+                        TaskList.RemoveAt(indexToRemove);
                         Console.WriteLine("Tarea " + task + " eliminada");
+
                     }
                 }
             }
-            catch (Exception)
-            {
+            catch (Exception ex)
+            { 
+                Console.WriteLine("Ocurrio un Error al remover la tarea");
             }
+                
+
         }
 
         public static void ShowMenuAdd()
@@ -81,30 +86,74 @@ namespace ToDo
             try
             {
                 Console.WriteLine("Ingrese el nombre de la tarea: ");
-                string task = Console.ReadLine();
-                TL.Add(task);
+                string task = UserTaskInput();
+                
+                TaskList.Add(task);
                 Console.WriteLine("Tarea registrada");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
             }
         }
 
-        public static void ShowMenuTres()
+        public static void ShowMenuDetail()
         {
-            if (TL == null || TL.Count == 0)
+            if (TaskList == null || TaskList.Count == 0)
             {
                 Console.WriteLine("No hay tareas por realizar");
-            } 
+            }
             else
             {
+                int taskIndex = 1;
                 Console.WriteLine("----------------------------------------");
-                for (int i = 0; i < TL.Count; i++)
-                {
-                    Console.WriteLine((i + 1) + ". " + TL[i]);
-                }
+
+                TaskList.ForEach(p => Console.WriteLine(taskIndex++ + ". " + p));
+               
                 Console.WriteLine("----------------------------------------");
             }
+        }
+
+        public static int UserNumericInput()
+        {
+
+            try
+            {
+                string userInput = Console.ReadLine();
+                return Convert.ToInt32(userInput);
+
+            }
+            catch
+            {
+                Console.WriteLine("Ingrese una Opcion Valida");
+                return (int)Options.None;
+            }
+        }
+
+        public static string UserTaskInput()
+        { 
+             
+            string task = Console.ReadLine();
+            if (task == null || task == "")           
+               throw new Exception("No se pudo registrar la tarea.");               
+            
+            return task;
+        }
+
+        public static int UserInputToIndex(int userInput)
+        {
+            return userInput-1;
+        }
+
+
+
+        public enum Options
+        {
+            None = 0,
+            NewTask = 1,
+            RemoveTask = 2,
+            PendingTasks = 3,
+            ExitProgram = 4
         }
     }
 }
